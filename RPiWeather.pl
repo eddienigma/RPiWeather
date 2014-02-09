@@ -217,3 +217,38 @@ sub readPressure {
 }
 
 
+# Begin the main program loop here
+# This is a perpetual loop with a 60 second sleep each cycle
+
+my $TemperatureC = 0.0;
+my $TemperatureF = 0.0;
+my $BMPTemperatureC = 0.0;
+my $BMPTemperatureF = 0.0;
+my $Pressure	 = 0.0;
+my $inHg	 = 0.0;
+my $Humidity	 = 0.0;
+
+my $buffer;
+my $timestamp;
+
+
+while(1) {
+	$buffer = `rht`;
+	($timestamp,$TemperatureC,$TemperatureF,$Humidity) = split(/\,/,$buffer);
+	$Pressure = readPressure($bmp180,BMP180_STANDARD) / 100.0;
+	$inHg = $Pressure * 0.0295333727;
+	$BMPTemperatureC = readTemp($bmp180);
+	$BMPTemperatureF = (($BMPTemperatureC * 9) / 5) + 32;
+
+	print  "\n####################################################\n";
+	printf "Temperature Celsius from DHT22: %.2f\n", $TemperatureC;
+	printf "Temperature Fahrenheit from DHT22: %.2f\n", $TemperatureF;
+	printf "Humidity from DHT22: %.2f%\n", $Humidity;
+	printf "SI Pressure from BMP180: %.2fhPa\n", $Pressure;
+	printf "Imperial Pressure from BMP180: %.2fin\n", $inHg;
+	print  "\n####################################################\n";
+
+	sleep(60);
+}
+
+
