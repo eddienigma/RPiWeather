@@ -233,7 +233,7 @@ my $timestamp;
 
 
 while(1) {
-	$buffer = `rht`;
+	$buffer = `./rht`;
 	($timestamp,$TemperatureC,$TemperatureF,$Humidity) = split(',',$buffer);
 	$Pressure = readPressure($bmp180,BMP180_STANDARD) / 100.0;
 	$inHg = $Pressure * 0.0295333727;
