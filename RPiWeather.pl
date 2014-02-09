@@ -2,7 +2,7 @@
 
 use RRDp;
 use Device::SMBus;
-use use Time::HiRes qw( usleep ualarm gettimeofday tv_interval nanosleep
+use Time::HiRes qw( usleep ualarm gettimeofday tv_interval nanosleep
                     clock_gettime clock_getres clock_nanosleep clock
                     stat );
 
