@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-use RRDp;
+use RRDs;
 use Device::SMBus;
 use Time::HiRes qw( usleep ualarm gettimeofday tv_interval nanosleep
                     clock_gettime clock_getres clock_nanosleep clock
@@ -227,26 +227,45 @@ my $BMPTemperatureF = 0.0;
 my $Pressure	 = 0.0;
 my $inHg	 = 0.0;
 my $Humidity	 = 0.0;
-
+my $count	 = 0;
+my $now_string;
 my $buffer;
 my $timestamp;
+my $ERR;
 
 
 while(1) {
-	$buffer = `./rht`;
-	($timestamp,$TemperatureC,$TemperatureF,$Humidity) = split(',',$buffer);
+	$count = 0;
+	do {
+		if($count > 0) {
+			sleep(2);
+		}
+		$count++;
+		$buffer = `/usr/src/RPiWeather/rht`;
+		chomp($buffer);
+		($timestamp,$TemperatureC,$TemperatureF,$Humidity) = split(',',$buffer);
+	} while (($TemperatureC == 0) && ($TemperatureF == 32.0) && ($Humidity == 0));
+
 	$Pressure = readPressure($bmp180,BMP180_STANDARD) / 100.0;
 	$inHg = $Pressure * 0.0295333727;
 	$BMPTemperatureC = readTemp($bmp180);
 	$BMPTemperatureF = (($BMPTemperatureC * 9) / 5) + 32;
+	$now_string = localtime();
 
 	print  "\n####################################################\n";
+	print  "$now_string\n";
 	printf "Temperature Celsius from DHT22: %.2f\n", $TemperatureC;
 	printf "Temperature Fahrenheit from DHT22: %.2f\n", $TemperatureF;
 	printf "Humidity from DHT22: %.2f%\n", $Humidity;
 	printf "SI Pressure from BMP180: %.2fhPa\n", $Pressure;
 	printf "Imperial Pressure from BMP180: %.2fin\n", $inHg;
-	print  "\n####################################################\n";
+	print  "\n####################################################\n\n";
+
+	RRDs::update ("/var/lib/RPiWeather/rrd/rhtp.rrd", "--template=tempF:tempC:humidity:pressure", "N:$BMPTemperatureF:$BMPTemperatureC:$Humidity:$Pressure");
+	$ERR = RRDs::error;
+	die "RRD Error: $ERR\n" if $ERR;
+
+
 
 	sleep(60);
 }
