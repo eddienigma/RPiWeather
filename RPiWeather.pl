@@ -81,8 +81,10 @@ sub readS16 {
         my ($bmp180,$register) = @_;
         my $readValHi = readS8($bmp180,$register);
         my $readValLo = $bmp180->readByteData($register+1);
+	use integer;
         my $bufferHi = $readValHi << 8;
         my $retVal = $bufferHi + $readValLo;
+	no integer;
         return $retVal;
 }
 
@@ -90,8 +92,10 @@ sub readU16 {
         my ($bmp180,$register) = @_;
         my $readValHi = $bmp180->readByteData($register);
         my $readValLo = $bmp180->readByteData($register+1);
+	use integer;
         my $bufferHi = $readValHi << 8;
         my $retVal = $bufferHi + $readValLo;
+	no integer;
         return $retVal;
 }
 
@@ -168,8 +172,9 @@ sub readTemp {
         $X1 = (($UT - $cal_AC6) * $cal_AC5) >> 15;
         $X2 = ($cal_MC << 11) / ($X1 + $cal_MD);
         $B5 = $X1 + $X2;
-        no integer;
+        #no integer;
         $temp = (($B5 + 8) >> 4) / 10.0;
+	no integer;
         return $temp;
 }
 
@@ -252,14 +257,16 @@ while(1) {
 	$BMPTemperatureF = (($BMPTemperatureC * 9) / 5) + 32;
 	$now_string = localtime();
 
-	print  "\n####################################################\n";
-	print  "$now_string\n";
-	printf "Temperature Celsius from DHT22: %.2f\n", $TemperatureC;
-	printf "Temperature Fahrenheit from DHT22: %.2f\n", $TemperatureF;
-	printf "Humidity from DHT22: %.2f%\n", $Humidity;
-	printf "SI Pressure from BMP180: %.2fhPa\n", $Pressure;
-	printf "Imperial Pressure from BMP180: %.2fin\n", $inHg;
-	print  "\n####################################################\n\n";
+	#print  "\n####################################################\n";
+	#print  "$now_string\n";
+	#printf "Temperature Celsius from DHT22: %.2f\n", $TemperatureC;
+	#printf "Temperature Fahrenheit from DHT22: %.2f\n", $TemperatureF;
+	#printf "Temperature C from BMP180: %.2f\n",$BMPTemperatureC;
+	#printf "Temperature F from BMP180: %.2f\n", $BMPTemperatureF;
+	#printf "Humidity from DHT22: %.2f%\n", $Humidity;
+	#printf "SI Pressure from BMP180: %.2fhPa\n", $Pressure;
+	#printf "Imperial Pressure from BMP180: %.2fin\n", $inHg;
+	#print  "\n####################################################\n\n";
 
 	RRDs::update ("/var/lib/RPiWeather/rrd/rhtp.rrd", "--template=tempF:tempC:humidity:pressure", "N:$BMPTemperatureF:$BMPTemperatureC:$Humidity:$Pressure");
 	$ERR = RRDs::error;
